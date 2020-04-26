@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+</head>
+<body>
+
+<input type="text"  id="cid"/>
+<button id="btn">提交</button>
+<script src="admin/js/jquery.min.js"></script>
+<script>
+
+    $("#btn").click(function () {
+        //获取input表单文本框的值
+        var name=$('#cid').val();
+        $(window).attr('location','/QueryOneStudent?name='+name+'');
+    });
+</script>
+</body>
+</html>
