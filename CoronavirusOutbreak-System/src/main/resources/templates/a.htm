@@ -1,0 +1,1472 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>2019 n-COV</title>
+    <style>
+        .container {
+            width: 1440px;
+            height: 2380px;
+            background-color: antiquewhite;
+            margin: 0 auto;
+        }
+
+        .title {
+            height: 291px;
+            background-color: #c20000;
+            text-align: center;
+        }
+
+        .searchbar {
+            height: 69px;
+            width: auto;
+            background-color: #ff7400;
+        }
+
+        .displaycontainer {
+            height: 635px;
+            background-color: #faebd6;
+            overflow: hidden;
+        }
+
+        .mapcontainer {
+            float: left;
+            margin: 0 auto;
+            height: 600px;
+            width: 800px;
+            background-color: lightgreen;
+            overflow: hidden;
+            position: relative;
+            margin-top: 15px;
+            margin-left: 50px;
+        }
+
+        #div1 {
+            overflow: auto;
+            border: 10px;
+            border-style: solid;
+            border-color: #ff7400;
+            border-radius: 20px;
+            float: right;
+            height: 580px;
+            width: 500px;
+            background-color: #f7fafd;
+            margin-top: 15px;
+            margin-right: 50px;
+        }::-webkit-scrollbar{ display:none;}
+
+        .mapcontainer:hover .arrow {
+            display: block;
+        }
+
+        .arrow {
+            cursor: pointer;
+            display: none;
+            line-height: 39px;
+            text-align: center;
+            font-size: 36px;
+            font-weight: bold;
+            width: 40px;
+            height: 100px;
+            position: absolute;
+            z-index: 2;
+            top: 180px;
+            background-color: RGBA(0, 0, 0, .3);
+            color: #fff;
+        }
+
+        .arrow:hover {
+            background-color: RGBA(0, 0, 0, .7);
+        }
+
+        #list {
+            width: 4800px;
+            height: 600px;
+            position: absolute;
+        }
+
+        #list div {
+            float: left;
+        }
+
+        .map_graph {
+            height: 600px;
+            width: 800px;
+        }
+
+        .sample {
+            width: 300px;
+            height: 130px;
+            margin-bottom: 13px;
+            background-color: orange;
+            border-radius: 10px;
+        }
+
+        .source {
+            height: 50px;
+            background-color: #ff7400;
+            text-align: center;
+        }
+
+        .world_container {
+            width: 1300px;
+            height: 804px;
+            background-color: #faebd6;
+            margin-left: 70px;
+            margin-top: 70px;
+        }
+
+        .leadcountry {
+            margin-top: 50px;
+            width: auto;
+            height: 300px;
+        }
+
+        .countryinfo {
+            float: left;
+            width: 300px;
+            height: 220px;
+            margin: 0 auto;
+            margin-left: 50px;
+            border-radius: 10px;
+            background-color: #faebd6;
+
+            word-spacing : 4px;
+            font-style : normal;
+            font-weight : 600;
+            font-size : 12pt;
+            text-align : justify;
+            text-indent : 1em;
+            text-transform : uppercase;
+            top : 5pt;
+            line-height : 52%;
+        }
+
+        .copyright {
+            width: auto;
+            height: 50px;
+            text-align: center;
+            font-size: 30px;
+            line-height: 50px;
+            background-color: #ff7400;
+        }
+
+        .clearfix:before,
+        .clearfix:after {
+            content: "";
+            display: table;
+        }
+
+        .clearfix:after {
+            clear: both;
+        }
+
+        .clearfix {
+            zoom: 1;
+        }
+    </style>
+    <script src="https://cdn.staticfile.org/jquery/1.10.2/jquery.min.js"></script>
+    <script src="https://cdn.staticfile.org/echarts/4.3.0/echarts.min.js"></script>
+    <script src="http://apps.bdimg.com/libs/angular.js/1.4.6/angular.min.js"></script>
+
+    <script src="/vue.min-2.5.17.js"></script>
+    <script src="/vue-resource-v1.5.1.js"></script>
+    <script src="/china.js"></script>
+    <script src="/world.js"></script>
+</head>
+
+<body>
+<div class="container">
+    <div class="title">
+        <div style="height:83px;padding-top: 83px;">
+            <span style="font-size: 83px;color: #ffffff;line-height: 83px;" th:text="${totalcase}">Total Case:50000</span>
+        </div>
+        <div style="height: 42px;">
+            <span style="font-size:42px;color:#ffffff;line-height: 42px;">COVID-19 Situtation</span>
+        </div>
+    </div>
+
+
+    <div class="section1 clearfix" style="overflow: hidden;">
+        <div class="searchbar clearfix" id="search">
+            <span id="C_title" style="font-size:30px;color:#ffffff;margin-left: 100px; padding-top:10px; font-weight: bold;float: left;">China COVID-19 Situtation</span>
+
+                <input  @keyup.enter="searcharea" type="text"  id="bar" list="batch_list" autocomplete="off" style="width: 282px;height: 42px;font-size: 30px;float: right;margin-top: 10px; margin-right: 100px;border-radius: 10px;" placeholder="Search area..." name="bar">
+                <datalist id="batch_list"></datalist>
+
+
+                <button style="border:none;background:none;float: right;position: relative;right:-280px;top:22px; cursor: pointer;" @click="searcharea" >🔍</button>
+
+        </div>
+
+        <script>
+
+            var vm = new Vue(   {//This function handles search operation
+                    el : '#search',//map to HTML element
+
+                    data : {sendedData : null},
+
+                    methods : {
+                        searcharea :  function ()
+                        {
+                            var stringname=document.getElementById('bar').value;//get the searched area name
+                            var url = '/savestu';//map to the handling function in server application
+                            var request = this.$http.post(url, stringname);//HTTP request type: post
+                            request.then(   function (response)
+                                {
+                                    var city = stringname
+                                    if (city != '') {
+                                        document.getElementById('C_title').innerHTML = String(city) + ' COVID-19 Situtation';//If search, update the HTML text
+                                    } else {
+                                        document.getElementById('C_title').innerHTML = "China" + ' COVID-19 Situtation';//If not search, set the HTML element default appearance
+                                    }
+                                    piedataList[0].value=response.body["currentc"]//retrive current case number from returned json object
+                                    piedataList[0].name="Current Case: "+response.body["currentc"]
+                                    piedataList[1].value=response.body["total"]//retrive total case number from returned json object
+                                    piedataList[1].name="Total Case: "+response.body["total"]
+                                    piedataList[2].value=response.body["sus"]//retrive suspicious case number from returned json object
+                                    piedataList[3].value=response.body["recoverc"]//retrive cured case number from returned json object
+                                    piedataList[3].name="Cured Case: "+response.body["recoverc"]
+                                    piedataList[4].value=response.body["died"]//retrive dead case number from returned json object
+                                    piedataList[4].name="Died Case: "+response.body["died"]
+
+                                    if(response.body["local"]==0)//if search for a province
+                                        piedataList[2].name="Suspicious Case: "+response.body["sus"]//display suspicious
+                                    else//if search for a country
+                                        piedataList[2].name="Unpublished Case"//display data unpublished
+
+                                   // for(k=0;k<=4;k++){console.log(piedataList[k])}
+
+                                    piechart.setOption(pieoption)//reset the pie chart
+
+                                    var list = document.getElementById('list');
+                                    list.style.left = -800 + "px";// Set rowing frame jump to pie chart
+                                    stop();
+                                    lost();
+                                    $('datalist#batch_list').empty();//clear the search optional list
+                                },
+                                function (reason)
+                                {
+                                    alert('Please input a place name');
+                                }
+                            )
+                        }
+                    }
+                }
+            );
+        </script>
+
+
+        <div class="displaycontainer">
+            <div class="mapcontainer" id="mapcontainer">
+                <div id="list" style="left:-800px;">
+                    <div class="map_graph" id="chinamap" style="cursor: pointer; background-color: #faebd6;"></div>
+                    <div class="map_graph" id="piemap" style="background-color: #faebd6;"></div>
+                    <div class="map_graph" id="linemap" style="background-color: #faebd6; text-align: center;line-height: 530px;">page3</div>
+                    <div class="map_graph" id="undefinemap" style="background-color: #faebd6; text-align: center;line-height: 530px;"></div>
+                    <div class="map_graph" id="chinamap1" style="cursor: pointer; background-color: #faebd6;"></div>
+                    <div class="map_graph" id="piemap1" style="background-color: #faebd6;"></div>
+
+                </div>
+                <a href="javascript:;" id="prev" class="arrow" style="top:230px; text-decoration: none;line-height: 100px;">◀</a>
+                <a href="javascript:;" id="next" class="arrow" style="top:230px;left:760px; text-decoration: none; line-height: 100px;">▶</a>
+            </div>
+            <div id="div1" style="text-align: center;"><span style="margin: 0,auto;">China COVID-19 Situtation</span></div>
+        </div>
+        <div class="source">
+            <span style="font-size:30px;color:#ffffff;line-height: 50px;">Source comes from ncov.dxy.cn</span>
+        </div>
+    </div>
+    <div class="section2">
+        <div class="searchbar" style="background-color: #ff9640;">
+            <span th:text="${worldsit}"style="font-size:30px;color:#ffffff;margin-left: 100px; padding-top:10px; font-weight: bold;float: left;">World Situtation</span>
+        </div>
+        <div class="world_container" id="worldmap">
+        </div>
+        <div class="leadcountry">
+            <script>
+
+            </script>
+            <div class="countryinfo" style="background-image:url(/flag/1.png);background-size: 100%,100%;">
+                <p id="f1" style="font-size:16pt;">France</p>
+                <p id="f2">Confirmed Case: {{USAa}}</p>
+                <p id="f3">Total Case: 10</p>
+                <p id="f4">Cured:  10</p>
+                <p id="f5">Death 10 </p>
+            </div>
+            <div class="countryinfo" style="background-image:url(/flag/2.png);background-size: 100%,100%;">
+                <p id="u1" style="font-size:16pt;">USA</p>
+                <p id="u2">Confirmed Case: 10</p>
+                <p id="u3">Total Case: 10</p>
+                <p id="u4">Cured:  10</p>
+                <p id="u5">Death 10 </p>
+            </div>
+            <div class="countryinfo" style="background-image:url(/flag/3.png);background-size: 100%,100%;">
+                <p id="k1" style="font-size:16pt;">UK</p>
+                <p id="k2">Confirmed Case: 10</p>
+                <p id="k3">Total Case: 10</p>
+                <p id="k4">Cured:  10</p>
+                <p id="k5">Death 10 </p>
+            </div>
+            <div class="countryinfo" style="background-image:url(/flag/4.png);background-size: 100%,100%;">
+                <p id="i1" style="font-size:16pt;">Italy</p>
+                <p id="i2">Confirmed Case: 10</p>
+                <p id="i3">Total Case: 10</p>
+                <p id="i4">Cured:  10</p>
+                <p id="i5">Death 10 </p>
+            </div>
+            <script type="text/javascript">
+
+                    $(document).ready(function(){//This function set data for four countries at the bottom of web page
+
+                        var jsonObj="Biaoge"
+                        $.ajax({
+                            type: 'POST',//HTTP request type: post
+                            url: "/queryn",//map to the handling function in server application
+                            dataType: "json",//define the data type returns from server
+                            data: JSON.stringify(jsonObj),//stringify HTTP request parameter
+                            contentType : "application/json",
+                            success: function(res) {//res is the returned data-a json object contains a list with for countries data.
+
+                                document.getElementById("f2").innerHTML = "Confirmed Case: "+res.list[0][1];//Set confirmed case for france
+                                document.getElementById("f3").innerHTML = "Total Case: "+res.list[0][2];
+                                document.getElementById("f4").innerHTML = "Cured:  "+res.list[0][4];
+                                document.getElementById("f5").innerHTML = "Death "+res.list[0][3];
+
+                                document.getElementById("u2").innerHTML = "Confirmed Case: "+res.list[1][1];//Set confirmed case for USA
+                                document.getElementById("u3").innerHTML = "Total Case: "+res.list[1][2];
+                                document.getElementById("u4").innerHTML = "Cured:  "+res.list[1][4];
+                                document.getElementById("u5").innerHTML = "Death "+res.list[1][3];
+
+                                document.getElementById("k2").innerHTML ="Confirmed Case: "+ res.list[2][1];//Set confirmed case for UK
+                                document.getElementById("k3").innerHTML ="Total Case: "+res.list[2][2];
+                                document.getElementById("k4").innerHTML = "Cured:  "+res.list[2][4];
+                                document.getElementById("k5").innerHTML = "Death "+res.list[2][3];
+
+                                document.getElementById("i2").innerHTML = "Confirmed Case: "+res.list[3][1];//Set confirmed case for Italy
+                                document.getElementById("i3").innerHTML ="Total Case: "+ res.list[3][2];
+                                document.getElementById("i4").innerHTML = "Cured:  "+res.list[3][4];
+                                document.getElementById("i5").innerHTML = "Death "+res.list[3][3];
+                            },
+                            error: function() {
+
+                                console.log("error")
+                            }
+                        });
+                    });
+
+            </script>
+        </div>
+    </div>
+    <div class=" copyright ">©2020 CNSCC.212 Group 8, Inc. All rights reserved.</div>
+</div>
+</body>
+
+</body>
+<script>
+    function lost(){
+        var obj=document.getElementById('bar');
+        obj.value=''
+    }
+</script>
+<script>
+    //以下是滚动代码
+    window.onload = function() {
+        var container = document.getElementById('mapcontainer');
+        var list = document.getElementById('list');
+        var prev = document.getElementById('prev');
+        var next = document.getElementById('next');
+        var animated = false;
+        var interval = 3000;
+        var timer;
+
+
+        function animate(offset) {
+            if (offset == 0) {
+                return;
+            }
+            animated = true;
+            var time = 300;
+            var inteval = 16.7;
+            var speed = offset / (time / inteval);
+            var left = parseInt(list.style.left) + offset;
+
+            var go = function() {
+                if ((speed > 0 && parseInt(list.style.left) < left) || (speed < 0 && parseInt(list.style.left) > left)) {
+                    list.style.left = parseInt(list.style.left) + speed + 'px';
+                    setTimeout(go, inteval);
+                } else {
+                    list.style.left = left + 'px';
+                    if (left > -800) {
+                        list.style.left = -3200 + 'px';
+                    }
+                    if (left < (-3200)) {
+                        list.style.left = '-800px';
+                    }
+                    animated = false;
+                }
+            }
+            go();
+        }
+        function creatTable() {//This function fill forms on HTML page
+            rows = 35;
+            cols = 6;
+            div1 = document.getElementById('div1')
+            // alert(rows+'\n'+cols)
+            var tab = '<table border=0 width=500 class="tab1" style="text-align: left;">'
+
+                tab += '<tr>'//This block of code fill title of the table
+                tab += "<td style='width=66px;background:#abb4ff;color:white;'>Area</td>"
+                tab += "<td style='width=66px;background:#abb4ff;color:white;'>Confirmed</td>"
+                tab += "<td style='width=66px;background:#abb4ff;color:white;'>Total</td>"
+                tab += "<td style='width=66px;background:#abb4ff;color:white;'>Death</td>"
+                tab += "<td style='width=66px;background:#abb4ff;color:white;'>Suspicious</td>"
+                tab += "<td style='width=66px;background:#abb4ff;color:white;'>Cured</td>"
+                tab += '</tr>'
+
+            $(document).ready(function(){//This function fill content of the table
+
+                var jsonObj="Biaoge"
+                $.ajax({
+                    type: 'POST',//HTTP request type: post
+                    url: "/form",//map to the handling function in server application
+                    dataType: "json",//define the data type returns from server
+                    data: JSON.stringify(jsonObj),//stringify HTTP request parameter
+                    contentType : "application/json",
+                    success: function(data) {
+
+
+                        for (var i = 0; i < rows-1; i++) {//For every row, fill the form
+
+                            if((i%2)==0){//if the row number is even, use color 1 as background
+                                $(".tab1").append('<tr>'
+                                    +"<td style='width=66px;background:#f5f5f5;'>"+data.list[i][0]+"</td>"
+                                    +"<td style='width=66px;background:#f5f5f5;'>"+data.list[i][1]+"</td>"
+                                    +"<td style='width=66px;background:#f5f5f5;'>"+data.list[i][2]+"</td>"
+                                    +"<td style='width=66px;background:#f5f5f5;'>"+data.list[i][3]+"</td>"
+                                    +"<td style='width=66px;background:#f5f5f5;'>"+data.list[i][4]+"</td>"
+                                    +"<td style='width=66px;background:#f5f5f5;'>"+data.list[i][5]+"</td>"
+                                    +'</tr>'
+                                );
+
+                            }
+                            else{//if the row number is odd, use color 2 as background
+                                $(".tab1").append('<tr>'
+                                    +"<td style='width=66px;background:#b7cef9;'>"+data.list[i][0]+"</td>"
+                                    +"<td style='width=66px;background:#b7cef9;'>"+data.list[i][1]+"</td>"
+                                    +"<td style='width=66px;background:#b7cef9;'>"+data.list[i][2]+"</td>"
+                                    +"<td style='width=66px;background:#b7cef9;'>"+data.list[i][3]+"</td>"
+                                    +"<td style='width=66px;background:#b7cef9;'>"+data.list[i][4]+"</td>"
+                                    +"<td style='width=66px;background:#b7cef9;'>"+data.list[i][5]+"</td>"
+                                    +'</tr>'
+                                );
+                                }
+
+
+                        }
+                    },
+                    error: function() {
+                        alert("error")
+                        console.log("error")
+                    }
+                });
+            });
+
+
+            tab += '</table>';
+            div1.innerHTML += tab
+        }
+        function play() {
+            timer = setTimeout(function() {
+                next.onclick();
+                play();
+            }, interval);
+        }
+
+        function stop() {
+            clearTimeout(timer);
+
+        }
+
+        next.onclick = function() {
+            if (animated) {
+                return;
+            }
+            animate(-800);
+        }
+        prev.onclick = function() {
+            if (animated) {
+                return;
+            }
+            animate(800);
+        }
+        container.onmouseover = stop;
+        container.onmouseout = play;
+
+        play();
+        creatTable();
+    }
+</script>
+
+<script>
+    //以下是折线图的代码
+    var linechart = echarts.init(document.getElementById('linemap'));
+    var d1=[[${cday1}]]//Retrive data from server of line chart
+    var d2=[[${cday2}]]
+    var d3=[[${cday3}]]
+    var d4=[[${cday4}]]
+    var d5=[[${cday5}]]
+    var d6=[[${cday6}]]
+    var d7=[[${cday7}]]
+    option = {
+        title: {
+            top: '5%',
+            text: 'China COVID-19 7-days history',
+            subtext: '',
+            left: 'center'
+        },
+        grid: {},
+        xAxis: {
+            left: 'center',
+            type: 'category',
+            data: ['7-days ago', ' ', ' ', ' ', ' ', ' ', 'Today']
+        },
+        yAxis: {
+            type: 'value'
+        },
+        series: [{
+            data: [d1, d2, d3, d4, d5, d6, d7],
+
+            type: 'line',
+            itemStyle: {
+                normal: {
+                    label: {
+                        show: true
+                    }
+                }
+            }
+        }]
+    };
+    linechart.setOption(option);
+</script>
+<script>
+    //以下是折线图2的代码
+    var linechart2 = echarts.init(document.getElementById('undefinemap'));
+    var d1=[[${wday1}]]//Retrive data from server of line chart
+    var d2=[[${wday2}]]
+    var d3=[[${wday3}]]
+    var d4=[[${wday4}]]
+    var d5=[[${wday5}]]
+    var d6=[[${wday6}]]
+    var d7=[[${wday7}]]
+    option3 = {
+        title: {
+            top: '5%',
+            text: 'Global COVID-19 7-days history',
+            subtext: '',
+            left: 'center'
+        },
+        grid: {},
+        xAxis: {
+            left: 'center',
+            type: 'category',
+            data: ['7-days ago', ' ', ' ', ' ', ' ', ' ', 'Today']
+        },
+        yAxis: {
+            type: 'value'
+        },
+        series: [{
+            data: [d1, d2, d3, d4, d5, d6, d7],
+
+            type: 'line',
+            itemStyle: {
+                normal: {
+                    label: {
+                        show: true
+                    }
+                }
+            }
+        }]
+    };
+    linechart2.setOption(option3);
+</script>
+<script>
+
+    $('input#bar').bind('keyup', function () {//This function set a search optional list for search function
+                var batch = $('input#bar').val();
+
+                $.ajax({
+                        url: "/search_batch",//map to the handling function in server application
+                        type: "POST",//HTTP request type: post
+                        dataType: 'json',//define the data type returns from server
+                        data: JSON.stringify(batch),//stringify HTTP request parameter
+                        async: false,
+                        contentType:"application/json",
+
+                       success: function (arg) {
+
+
+                            $('datalist#batch_list').empty();
+                             for (var i = 0; i <arg.place.length; i++) {//tetrive every place name form returned json object
+                                    var add_options = '<option value="' + arg.place[i] + '">'+ arg.place[i] + '</option>';//set a optional choice
+                                    $('datalist#batch_list').append(add_options);//add to optional list
+                                }
+                         }
+                 })
+             });
+
+
+
+</script>
+
+
+<script th:inline="javascript" type="text/javascript">
+    var dataList = [{
+        name: "南海诸岛 ",
+        value: 0
+    }, {
+        name: '北京',
+        value: [[${beijing}]]
+    }, {
+        name: '天津',
+        value: [[${tianjin}]]
+    }, {
+        name: '上海',
+        value: [[${shanghai}]]
+    }, {
+        name: '重庆',
+        value: [[${chongqing}]]
+    }, {
+        name: '河北',
+        value: [[${hebei}]]
+    }, {
+        name: '河南',
+        value: [[${henan}]]
+    }, {
+        name: '云南',
+        value: [[${yunnan}]]
+    }, {
+        name: '辽宁',
+        value: [[${liaoning}]]
+    }, {
+        name: '黑龙江',
+        value: [[${heilongjiang}]]
+    }, {
+        name: '湖南',
+        value: [[${hunan}]]
+    }, {
+        name: '安徽',
+        value: [[${anhui}]]
+    }, {
+        name: '山东',
+        value: [[${shandong}]]
+    }, {
+        name: '新疆',
+        value: [[${xinjiang}]]
+    }, {
+        name: '江苏',
+        value: [[${jiangsu}]]
+    }, {
+        name: '浙江',
+        value: [[${zhejiang}]]
+    }, {
+        name: '江西',
+        value:[[${jiangxi}]]
+    }, {
+        name: '湖北',
+        value: [[${hubei}]]
+    }, {
+        name: '广西',
+        value: [[${guangxi}]]
+    }, {
+        name: '甘肃',
+        value: [[${gansu}]]
+    }, {
+        name: '山西',
+        value: [[${shanxi}]]
+    }, {
+        name: '内蒙古',
+        value: [[${neimenggu}]]
+    }, {
+        name: '陕西',
+        value: [[${shannxi}]]
+    }, {
+        name: '吉林',
+        value: [[${jilin}]]
+    }, {
+        name: '福建',
+        value: [[${fujian}]]
+    }, {
+        name: '贵州',
+        value: [[${guizhou}]]
+    }, {
+        name: '广东',
+        value: [[${guangdong}]]
+    }, {
+        name: '青海',
+        value: [[${qinghai}]]
+    }, {
+        name: '西藏',
+        value: [[${xizang}]]
+    }, {
+        name: '四川',
+        value: [[${sichuan}]]
+    }, {
+        name: '宁夏',
+        value: [[${ningxia}]]
+    }, {
+        name: '海南',
+        value: [[${hainan}]]
+    }, {
+        name: '台湾',
+        value: [[${taiwan}]]
+    }, {
+        name: '香港',
+        value: [[${xianggang}]]
+    }, {
+        name: '澳门',
+        value: [[${aomen}]]
+    }]
+    var chinamap = echarts.init(document.getElementById('chinamap'));
+    var chinamap1 = echarts.init(document.getElementById('chinamap1'));
+    function randomValue() {
+        return Math.round(Math.random() * 1000);
+    }
+
+    option = {
+        tooltip: {
+            formatter: function(params, ticket, callback) {
+                    return params.seriesName + '<br />' + params.name + '：' + params.value
+                } //数据格式化
+        },
+        visualMap: {
+            min: 0,
+            max: 500,
+            left: 'left',
+            top: 'bottom',
+            text: ['高', '低'], //取值范围的文字
+            inRange: {
+                color: ['#e0ffff', '#001d38'] //取值范围的颜色
+            },
+            show: false //图注
+        },
+        geo: {
+            map: 'china',
+            roam: false, //不开启缩放和平移
+            zoom: 1.23, //视角缩放比例
+            label: {
+                normal: {
+                    show: true,
+                    fontSize: '10',
+                    color: 'rgba(0,0,0,0.7)'
+                }
+            },
+            itemStyle: {
+                normal: {
+                    borderColor: 'rgba(0, 0, 0, 0.2)'
+                },
+                emphasis: {
+                    areaColor: '#F3B329', //鼠标选择区域颜色
+                    shadowOffsetX: 0,
+                    shadowOffsetY: 0,
+                    shadowBlur: 20,
+                    borderWidth: 0,
+                    shadowColor: 'rgba(0, 0, 0, 0.5)'
+                }
+            }
+        },
+        series: [{
+            name: 'Exist Cases:',
+            type: 'map',
+            geoIndex: 0,
+            data: dataList
+        }]
+    };
+    chinamap.setOption(option);
+    chinamap1.setOption(option);
+    chinamap1.on('click', function(params) {//This function make a query for each lick on china map and request Current Case Total Case Cured Case and Death Case from the web server
+        var p=params.name//retrive the name of a click country
+        $(document).ready(function(){
+
+            $.ajax({
+                type: 'POST',//HTTP request type: post
+                url: "/chinamap",//map to the handling function in server application
+                dataType: "json",//define the data type returns from server
+                data: JSON.stringify(p),//stringify HTTP request parameter
+                contentType : "application/json",
+                success: function(res) {
+                    // alert(p)
+                    console.log(res)
+                    alert(params.name+ "\n"+ "Current Case : "+res.currentc+"\n"+//pop out a window show current case
+                        "Total Case: "+res.total+"\n"+//show total case
+                        "Cured Case: "+res.recoverc+"\n"+//show cured case
+                        "Suspicious Case: "+res.sus+"\n"+//show suspicious case
+                        "Death Case: "+res.dead//show dead case
+                    );
+                },
+                error: function() {
+                    console.log("error")
+                }
+            });
+        });
+
+
+    });
+</script>
+
+<script>
+    //以下是饼图代码
+    var piechart = echarts.init(document.getElementById('piemap'))
+    var piechart1 = echarts.init(document.getElementById('piemap1'));
+    var piedataList = [{
+            value: [[${chinacurrent}]],//retrive data of current case in china
+            name: 'Current Case'
+        }, {
+            value: [[${chinatotal}]],//retrive data of total case in china
+            name: 'Total Case'
+        }, {
+            value: 0,
+            name: 'Suspicious Case'
+        }, {
+            value: [[${chinacured}]],//retrive data of cured case in china
+            name: 'Cured Case'
+        }, {
+            value: [[${chinadead}]],//retrive data of died case in china
+            name: 'Died Case'
+        }]
+
+    pieoption = {
+        title: {
+            top:'18%',
+            text: "",
+            subtext: '',
+            left: 'center'
+        },
+        tooltip: {
+            trigger: 'item',
+            formatter: '{a} <br/>{b} : {c} ({d}%)'
+        },
+
+
+        series: [{
+            label:{
+                fontSize:20
+            },
+            name: "Situtation",
+            type: 'pie',
+            radius: '55%',
+            center: ['50%', '60%'],
+            data:piedataList,
+            emphasis: {
+                itemStyle: {
+                    shadowBlur: 10,
+                    shadowOffsetX: 0,
+                    shadowColor: 'rgba(0, 0, 0, 0.5)'
+                }
+            }
+        }]
+    };
+    piechart.setOption(pieoption);
+    piechart1.setOption(pieoption);
+</script>
+
+
+<script>
+    var myChart = echarts.init(document.getElementById('worldmap'));
+    option = {
+        title: {
+
+
+            sublink: 'http://esa.un.org/wpp/Excel-Data/population.htm',
+            left: 'center',
+            top: 'top'
+        },
+        visualMap: {
+            min: 0,
+            max: 60000,
+            text: ['High', 'Low'],
+            realtime: false,
+            calculable: true,
+            color: ['orangered', 'yellow', 'lightskyblue']
+        },
+        series: [{
+            name: 'World Situation',
+            type: 'map',
+            mapType: 'world',
+            roam: false,
+            itemStyle: {
+                emphasis: {
+                    label: {
+                        show: true
+                    }
+                }
+            },
+            data: [{
+                name: 'Afghanistan',
+                value: [[${Afghanistan}]]
+            }, {
+                name: 'Angola',
+                value: 0
+            }, {
+                name: 'Albania',
+                value: [[${Albania}]]
+            }, {
+                name: 'United Arab Emirates',
+                value: [[${TheUnitedArabEmirates}]]
+            }, {
+                name: 'Argentina',
+                value: [[${Argentina}]]
+            }, {
+                name: 'Armenia',
+                value: [[${Armenia}]]
+            }, {
+                name: 'French Southern and Antarctic Lands',
+                value: 0
+            }, {
+                name: 'Australia',
+                value: [[${Australia}]]
+            }, {
+                name: 'Austria',
+                value: [[${Austria}]]
+            }, {
+                name: 'Azerbaijan',
+                value: [[${Azerbaijan}]]
+            }, {
+                name: 'Burundi',
+                value: 0
+            }, {
+                name: 'Belgium',
+                value: [[${Belgium}]]
+            }, {
+                name: 'Benin',
+                value: 0
+            }, {
+                name: 'Burkina Faso',
+                value: [[${burkinafaso}]]
+            }, {
+                name: 'Bangladesh',
+                value: [[${Bangladesh}]]
+            }, {
+                name: 'Bulgaria',
+                value: [[${Bulgaria}]]
+            }, {
+                name: 'The Bahamas',
+                value: 0
+            }, {
+                name: 'Bosnia and Herzegovina',
+                value: [[${Bosnia}]]
+            }, {
+                name: 'Belarus',
+                value: [[${Belarus}]]
+            }, {
+                name: 'Belize',
+                value: 0
+            }, {
+                name: 'Bermuda',
+                value: [[${Burma}]]
+            }, {
+                name: 'Bolivia',
+                value: [[${bolivia}]]
+            }, {
+                name: 'Brazil',
+                value: [[${Brazil}]]
+            }, {
+                name: 'Brunei',
+                value: 0
+            }, {
+                name: 'Bhutan',
+                value: 0
+            }, {
+                name: 'Botswana',
+                value: 0
+            }, {
+                name: 'Central African Republic',
+                value: 0
+            }, {
+                name: 'Canada',
+                value: [[${Canada}]]
+            }, {
+                name: 'Switzerland',
+                value: [[${Switzerland}]]
+            }, {
+                name: 'Chile',
+                value: [[${Chile}]]
+            }, {
+                name: 'China',
+                value: [[${china}]]
+            }, {
+                name: 'Ivory Coast',
+                value: 0
+            }, {
+                name: 'Cameroon',
+                value: [[${Cameroon}]]
+            }, {
+                name: 'Democratic Republic of the Congo',
+                value: 0
+            }, {
+                name: 'Republic of the Congo',
+                value: [[${Congo}]]
+            }, {
+                name: 'Colombia',
+                value: [[${Columbia}]]
+            }, {
+                name: 'Costa Rica',
+                value: [[${CostaRica}]]
+            }, {
+                name: 'Cuba',
+                value: [[${Cuba}]]
+            }, {
+                name: 'Northern Cyprus',
+                value: 0
+            }, {
+                name: 'Cyprus',
+                value: [[${Cyprus}]]
+            }, {
+                name: 'Czech Republic',
+                value: [[${Czech}]]
+            }, {
+                name: 'Germany',
+                value: [[${Germany}]]
+            }, {
+                name: 'Djibouti',
+                value: [[${Djibouti}]]
+            }, {
+                name: 'Denmark',
+                value: [[${Denmark}]]
+            }, {
+                name: 'Dominican Republic',
+                value: [[${Dominican}]]
+            }, {
+                name: 'Algeria',
+                value: [[${Algeria}]]
+            }, {
+                name: 'Ecuador',
+                value: [[${Ecuador}]]
+            }, {
+                name: 'Egypt',
+                value: [[${Egypt}]]
+            }, {
+                name: 'Eritrea',
+                value: 0
+            }, {
+                name: 'Spain',
+                value: [[${Spain}]]
+            }, {
+                name: 'Estonia',
+                value: [[${Estonia}]]
+            }, {
+                name: 'Ethiopia',
+                value: 0
+            }, {
+                name: 'Finland',
+                value: [[${Finland}]]
+            }, {
+                name: 'Fiji',
+                value: 0
+            }, {
+                name: 'Falkland Islands',
+                value: 0
+            }, {
+                name: 'France',
+                value: [[${France}]]
+            }, {
+                name: 'Gabon',
+                value: [[${Gabon}]]
+            }, {
+                name: 'United Kingdom',
+                value: [[${UK}]]
+            }, {
+                name: 'Georgia',
+                value: [[${Georgia}]]
+            }, {
+                name: 'Ghana',
+                value: [[${Ghana}]]
+            }, {
+                name: 'Guinea',
+                value: [[${Guinea}]]
+            }, {
+                name: 'Gambia',
+                value: 0
+            }, {
+                name: 'Guinea Bissau',
+                value: [[${Guinea}]]
+            }, {
+                name: 'Equatorial Guinea',
+                value: 0
+            }, {
+                name: 'Greece',
+                value: [[${Greece}]]
+            }, {
+                name: 'Greenland',
+                value: 0
+            }, {
+                name: 'Guatemala',
+                value: [[${Guatemala}]]
+            }, {
+                name: 'French Guiana',
+                value: 0
+            }, {
+                name: 'Guyana',
+                value: 0
+            }, {
+                name: 'Honduras',
+                value: [[${Honduras}]]
+            }, {
+                name: 'Croatia',
+                value: [[${Croatia}]]
+            }, {
+                name: 'Haiti',
+                value: 0
+            }, {
+                name: 'Hungary',
+                value: [[${Hungary}]]
+            }, {
+                name: 'Indonesia',
+                value: [[${Indonesia}]]
+            }, {
+                name: 'India',
+                value: [[${India}]]
+            }, {
+                name: 'Ireland',
+                value: 0
+            }, {
+                name: 'Iran',
+                value: [[${Iran}]]
+            }, {
+                name: 'Iraq',
+                value: [[${Iraq}]]
+            }, {
+                name: 'Iceland',
+                value: [[${Iceland}]]
+            }, {
+                name: 'Israel',
+                value: [[${Israel}]]
+            }, {
+                name: 'Italy',
+                value: [[${Italy}]]
+            }, {
+                name: 'Jamaica',
+                value: [[${Jamaica}]]
+            }, {
+                name: 'Jordan',
+                value: [[${Jordan}]]
+            }, {
+                name: 'Japan',
+                value: [[${Japan}]]
+            }, {
+                name: 'Kazakhstan',
+                value: [[${Kazakhstan}]]
+            }, {
+                name: 'Kenya',
+                value: [[${Kenya}]]
+            }, {
+                name: 'Kyrgyzstan',
+                value: [[${Kyrgyzstan}]]
+            }, {
+                name: 'Cambodia',
+                value: 0
+            }, {
+                name: 'South Korea',
+                value: [[${Korea}]]
+            }, {
+                name: 'Kosovo',
+                value: 0
+            }, {
+                name: 'Kuwait',
+                value: [[${Kuwait}]]
+            }, {
+                name: 'Laos',
+                value: 0
+            }, {
+                name: 'Lebanon',
+                value: [[${Lebanon}]]
+            }, {
+                name: 'Liberia',
+                value: 0
+            }, {
+                name: 'Libya',
+                value: 0
+            }, {
+                name: 'Sri Lanka',
+                value: [[${SriLanka}]]
+            }, {
+                name: 'Lesotho',
+                value: 0
+            }, {
+                name: 'Lithuania',
+                value: [[${Lithuania}]]
+            }, {
+                name: 'Luxembourg',
+                value: [[${Luxembourg}]]
+            }, {
+                name: 'Latvia',
+                value: [[${Latvia}]]
+            }, {
+                name: 'Morocco',
+                value: [[${Morocco}]]
+            }, {
+                name: 'Moldova',
+                value: [[${Moldova}]]
+            }, {
+                name: 'Madagascar',
+                value: 0
+            }, {
+                name: 'Mexico',
+                value: [[${Mexico}]]
+            }, {
+                name: 'Macedonia',
+                value: [[${NorthMacedonia}]]
+            }, {
+                name: 'Mali',
+                value: [[${Mali}]]//=====================================================
+            }, {
+                name: 'Myanmar',
+                value: 0
+            }, {
+                name: 'Montenegro',
+                value: [[${Montenegro}]]
+            }, {
+                name: 'Mongolia',
+                value: 0
+            }, {
+                name: 'Mozambique',
+                value: 0
+            }, {
+                name: 'Mauritania',
+                value: 0
+            }, {
+                name: 'Malawi',
+                value: 0
+            }, {
+                name: 'Malaysia',
+                value: [[${Malaysia}]]
+            }, {
+                name: 'Namibia',
+                value: 0
+            }, {
+                name: 'New Caledonia',
+                value: 0
+            }, {
+                name: 'Niger',
+                value: 0
+            }, {
+                name: 'Nigeria',
+                value: [[${Nigeria}]]
+            }, {
+                name: 'Nicaragua',
+                value: 0
+            }, {
+                name: 'Netherlands',
+                value: [[${Netherlands}]]
+            }, {
+                name: 'Norway',
+                value: [[${Norway}]]
+            }, {
+                name: 'Nepal',
+                value: 0
+            }, {
+                name: 'New Zealand',
+                value: 0//[[${NewZealand}]]
+            }, {
+                name: 'Oman',
+                value: [[${Oman}]]
+            }, {
+                name: 'Pakistan',
+                value: [[${Pakistan}]]
+            }, {
+                name: 'Panama',
+                value: [[${Panama}]]
+            }, {
+                name: 'Peru',
+                value: [[${Peru}]]
+            }, {
+                name: 'Philippines',
+                value: [[${Philippines}]]
+            }, {
+                name: 'Papua New Guinea',
+                value: 0
+            }, {
+                name: 'Poland',
+                value: [[${poland}]]
+            }, {
+                name: 'Puerto Rico',
+                value: [[${PuertoRico}]]
+            }, {
+                name: 'North Korea',
+                value: 0
+            }, {
+                name: 'Portugal',
+                value: [[${Portugal}]]
+            }, {
+                name: 'Paraguay',
+                value: [[${Paraguay}]]
+            }, {
+                name: 'Qatar',
+                value: [[${Qatar}]]
+            }, {
+                name: 'Romania',
+                value: [[${Romania}]]
+            }, {
+                name: 'Russia',
+                value: [[${Russia}]]
+            }, {
+                name: 'Rwanda',
+                value: 0//[[${Rwanda}]]
+            }, {
+                name: 'Western Sahara',
+                value: 0
+            }, {
+                name: 'Saudi Arabia',
+                value: [[${SaudiArabia}]]
+            }, {
+                name: 'Sudan',
+                value:0
+            }, {
+                name: 'South Sudan',
+                value: 0
+            }, {
+                name: 'Senegal',
+                value: [[${Senegal}]]
+            }, {
+                name: 'Solomon Islands',
+                value: 0
+            }, {
+                name: 'Sierra Leone',
+                value: 0
+            }, {
+                name: 'El Salvador',
+                value: 0
+            }, {
+                name: 'Somaliland',
+                value: 0
+            }, {
+                name: 'Somalia',
+                value: [[${Somalia}]]
+            }, {
+                name: 'Republic of Serbia',
+                value: [[${Serbia}]]
+            }, {
+                name: 'Suriname',
+                value: 0
+            }, {
+                name: 'Slovakia',
+                value: [[${Slovakia}]]
+            }, {
+                name: 'Slovenia',
+                value: [[${Slovenia}]]
+            }, {
+                name: 'Sweden',
+                value: [[${Sweden}]]
+            }, {
+                name: 'Swaziland',
+                value: 0
+            }, {
+                name: 'Syria',
+                value: 0
+            }, {
+                name: 'Chad',
+                value: 0
+            }, {
+                name: 'Togo',
+                value: 0
+            }, {
+                name: 'Thailand',
+                value: [[${Thailand}]]
+            }, {
+                name: 'Tajikistan',
+                value: 0
+            }, {
+                name: 'Turkmenistan',
+                value: 0
+            }, {
+                name: 'East Timor',
+                value: 0
+            }, {
+                name: 'Trinidad and Tobago',
+                value: [[${TrinidadandTobago}]]
+            }, {
+                name: 'Tunisia',
+                value: [[${Tunisia}]]
+            }, {
+                name: 'Turkey',
+                value: [[${Turkey}]]
+            }, {
+                name: 'United Republic of Tanzania',
+                value: 0
+            }, {
+                name: 'Uganda',
+                value: 0
+            }, {
+                name: 'Ukraine',
+                value: [[${Ukraine}]]
+            }, {
+                name: 'Uruguay',
+                value: [[${Uruguay}]]
+            }, {
+                name: 'United States',
+                value: [[${USA}]]
+            }, {
+                name: 'Uzbekistan',
+                value: [[${Uzbekistan}]]
+            }, {
+                name: 'Venezuela',
+                value: [[${Venezuela}]]
+            }, {
+                name: 'Vietnam',
+                value: [[${Vietnam}]]
+            }, {
+                name: 'Vanuatu',
+                value: 0
+            }, {
+                name: 'West Bank',
+                value: 0
+            }, {
+                name: 'Yemen',
+                value: 0
+            }, {
+                name: 'South Africa',
+                value: [[${SouthAfrica}]]
+            }, {
+                name: 'Zambia',
+                value: 0
+            }, {
+                name: 'Zimbabwe',
+                value: 0
+            }]
+        }]
+    };
+
+    myChart.setOption(option);
+    myChart.on('click', function(params) {//This function make a query for each lick on world map and request Current Case Total Case Cured Case and Death Case from the web server
+       // console.log(params.name)
+        var p=params.name//retrive the name of a click country
+        $(document).ready(function(){
+
+            $.ajax({
+                type: 'POST',//HTTP request type: post
+                url: "/map",//map to the handling function in server application
+                dataType: "json",//define the data type returns from server
+                data: JSON.stringify(p),//stringify HTTP request parameter
+                contentType : "application/json",
+                success: function(res) {
+                    console.log(res)
+                    alert(params.name+ "\n"+ "Current Case : "+res.currentc+"\n"+//pop out a window show current case
+                            "Total Case: "+res.total+"\n"+//show total case
+                            "Cured Case: "+res.recoverc+"\n"+//show cured case
+                            "Death Case: "+res.dead//show dead case
+                );
+                },
+                error: function() {
+                    console.log("error")
+                }
+            });
+        });
+
+    })
+
+
+</script>
+
+</html>
